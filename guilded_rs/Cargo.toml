@@ -4,7 +4,7 @@ version = "0.0.1"
 edition = "2021"
 authors = ["SafeShows <guilded.gg/u/SafeShows>"]
 description = "Libary for creating bot in rust for guilded"
-license = "CC BY-NC-ND 4.0"
+license = "CC-BY-NC-ND-4.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
