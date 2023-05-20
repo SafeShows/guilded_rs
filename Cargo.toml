@@ -1,0 +1,3 @@
+[workspace]
+members = ["example", "guilded_rs"]
+default-members = ["example"]
