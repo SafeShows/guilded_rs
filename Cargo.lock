@@ -8,4 +8,4 @@ version = "0.1.0"
 
 [[package]]
 name = "guilded_rs"
-version = "0.1.0"
+version = "0.0.1"
