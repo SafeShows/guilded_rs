@@ -9,16 +9,18 @@ use crate::bot_http::BotHttp;
 
 pub struct Task {
     pub interval: Duration,
-    pub handler: fn(bot: BotHttp),
+    pub handler: fn(bot: &BotHttp),
 }
 impl Task {
-    pub fn new(interval: Duration, handler: fn(bot: BotHttp)) -> Self {
+    pub fn new(interval: Duration, handler: fn(bot: &BotHttp)) -> Self {
         Self { interval, handler }
     }
 }
+
 pub struct TaskPool {
     pool: SegQueue<Task>,
 }
+
 impl TaskPool {
     pub fn new() -> Self {
         Self {
@@ -32,16 +34,13 @@ impl TaskPool {
 
     pub fn start_handler(self, bot: BotHttp) {
         spawn(move || loop {
-            match self.pool.pop() {
-                Some(task) => {
-                    let bot_clone = BotHttp::from(bot);
-                    spawn(move || loop {
-                        (task.handler)(bot_clone);
-                        sleep(task.interval);
-                    });
-                }
-                None => {}
-            };
+            if let Some(task) = self.pool.pop() {
+                let bot = bot.clone();
+                spawn(move || loop {
+                    (task.handler)(&bot);
+                    sleep(task.interval);
+                });
+            }
             sleep(Duration::from_nanos(1));
         });
     }

@@ -10,20 +10,11 @@ const API_BASE: &str = "https://www.guilded.gg/api/v1/";
 #[derive(Debug, Clone)]
 pub struct BotHttp {
     http_client: Client,
-    event: Event,
-}
-
-impl From<&mut BotHttp> for BotHttp {
-    fn from(value: &mut BotHttp) -> Self {
-        Self {
-            http_client: value.http_client.clone(),
-            event: value.event.clone(),
-        }
-    }
+    event: Option<Event>,
 }
 
 impl BotHttp {
-    pub fn new(token: String, event: Event) -> Self {
+    pub fn new(token: String, event: Option<Event>) -> Self {
         let mut client = ClientBuilder::new();
         let mut default_headers = HeaderMap::new();
         default_headers.insert(

@@ -24,12 +24,13 @@ pub struct Bot {
     event_handler: Option<fn(bot: &mut BotHttp, event: Event)>,
     socket: Client<TlsStream<TcpStream>>,
     token: String,
+    http: BotHttp,
 }
 
 impl Bot {
     pub async fn new(token: String) -> Self {
         let mut headers = Headers::new();
-        headers.set(Authorization(format!("Bearer {}", token)));
+        headers.set(Authorization(format!("Bearer {}", token.clone())));
         let socket = ClientBuilder::new("wss://www.guilded.gg/websocket/v1")
             .unwrap()
             .custom_headers(&headers)
@@ -40,7 +41,8 @@ impl Bot {
             socket,
             event_handler: None,
             task_pool: TaskPool::new(),
-            token,
+            token: token.clone(),
+            http: BotHttp::new(token, None),
         }
     }
 
@@ -53,13 +55,12 @@ impl Bot {
     }
 
     fn handle_events(&mut self, event: Event) {
-        match self.event_handler {
-            Some(handler) => (handler)(
-                &mut BotHttp::new(self.token.clone(), event.clone()),
+        if let Some(handler) = self.event_handler {
+            (handler)(
+                &mut BotHttp::new(self.token.clone(), Some(event.clone())),
                 event.clone(),
-            ),
-            None => todo!(),
-        }
+            );
+        };
     }
 
     ///
@@ -70,9 +71,8 @@ impl Bot {
         self
     }
 
-    pub fn start_task_pool_handler(&mut self) {}
-
     pub fn run(mut self) {
+        self.task_pool.start_handler(self.http.clone());
         loop {
             match self.socket.recv_message() {
                 Ok(message) => match message {
