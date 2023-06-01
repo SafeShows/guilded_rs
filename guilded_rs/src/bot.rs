@@ -1,7 +1,6 @@
 use std::{
-    marker::PhantomData,
     net::TcpStream,
-    thread::{self, spawn},
+    thread::{self},
     time::Duration,
 };
 
@@ -13,12 +12,15 @@ use websocket::{
     ClientBuilder, OwnedMessage,
 };
 
-use crate::{bot_http::BotHttp, task::Task};
+use crate::{
+    bot_http::BotHttp,
+    task::{Task, TaskPool},
+};
 
 use crate::event::Event;
 
 pub struct Bot {
-    tasks: Option<Vec<Task>>,
+    task_pool: TaskPool,
     event_handler: Option<fn(bot: &mut BotHttp, event: Event)>,
     socket: Client<TlsStream<TcpStream>>,
     token: String,
@@ -37,7 +39,7 @@ impl Bot {
         Self {
             socket,
             event_handler: None,
-            tasks: None,
+            task_pool: TaskPool::new(),
             token,
         }
     }
@@ -63,19 +65,8 @@ impl Bot {
     ///
     /// Adds a task to the task pool.
     ///
-    pub fn add_task(&mut self, handler: fn(bot: &mut BotHttp), interval: Duration) -> &mut Self {
-        match self.tasks.as_mut() {
-            Some(tasks) => tasks.push(Task {
-                interval,
-                handler: Some(handler),
-            }),
-            None => {
-                self.tasks = Some(vec![Task {
-                    interval,
-                    handler: Some(handler),
-                }]);
-            }
-        }
+    pub fn add_task(&mut self, task: Task) -> &mut Self {
+        self.task_pool.add_task(task);
         self
     }
 

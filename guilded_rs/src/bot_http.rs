@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use reqwest::{
     header::{HeaderMap, HeaderValue},
     Client, ClientBuilder,
@@ -9,9 +7,19 @@ use crate::{event::models::ChatMessage, event::Event};
 
 const API_BASE: &str = "https://www.guilded.gg/api/v1/";
 
+#[derive(Debug, Clone)]
 pub struct BotHttp {
     http_client: Client,
     event: Event,
+}
+
+impl From<&mut BotHttp> for BotHttp {
+    fn from(value: &mut BotHttp) -> Self {
+        Self {
+            http_client: value.http_client.clone(),
+            event: value.event.clone(),
+        }
+    }
 }
 
 impl BotHttp {
@@ -36,7 +44,7 @@ impl BotHttp {
 
     pub async fn send_chat_message(
         &mut self,
-        mut message: ChatMessage,
+        message: ChatMessage,
         channel_id: Option<String>,
         is_reply: bool,
         // ) -> Result<ChatMessage, ()> {
