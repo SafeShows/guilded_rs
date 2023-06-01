@@ -6,3 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+guilded_rs = { path = "../guilded_rs" }
+dotenv = "0.15.0"
+tokio = { version = "1.28.1", features = ["full"] }
