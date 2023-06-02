@@ -9,10 +9,10 @@ use crate::bot_http::BotHttp;
 
 pub struct Task {
     pub interval: Duration,
-    pub handler: fn(bot: &BotHttp),
+    pub handler: fn(bot: &mut BotHttp),
 }
 impl Task {
-    pub fn new(interval: Duration, handler: fn(bot: &BotHttp)) -> Self {
+    pub fn new(interval: Duration, handler: fn(bot: &mut BotHttp)) -> Self {
         Self { interval, handler }
     }
 }
@@ -35,9 +35,9 @@ impl TaskPool {
     pub fn start_handler(self, bot: BotHttp) {
         spawn(move || loop {
             if let Some(task) = self.pool.pop() {
-                let bot = bot.clone();
+                let mut bot = bot.clone();
                 spawn(move || loop {
-                    (task.handler)(&bot);
+                    (task.handler)(&mut bot);
                     sleep(task.interval);
                 });
             }

@@ -1,16 +1,17 @@
 use reqwest::{
-    header::{HeaderMap, HeaderValue},
-    Client, ClientBuilder,
+    blocking::{Client, ClientBuilder},
+    header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE},
 };
 
-use crate::{event::models::ChatMessage, event::Event};
+use crate::event::models::ChatMessage as Message;
+use crate::{event::Event, models::ChatMessage};
 
-const API_BASE: &str = "https://www.guilded.gg/api/v1/";
+const API_BASE: &str = "https://www.guilded.gg/api/v1";
 
 #[derive(Debug, Clone)]
 pub struct BotHttp {
     http_client: Client,
-    event: Option<Event>,
+    pub event: Option<Event>,
 }
 
 impl BotHttp {
@@ -18,11 +19,11 @@ impl BotHttp {
         let mut client = ClientBuilder::new();
         let mut default_headers = HeaderMap::new();
         default_headers.insert(
-            "Authorization",
+            AUTHORIZATION,
             HeaderValue::from_str(format!("Bearer {}", token).as_str()).unwrap(),
         );
         default_headers.insert(
-            "Content-type",
+            CONTENT_TYPE,
             HeaderValue::from_str("application/json").unwrap(),
         );
         default_headers.insert("Accept", HeaderValue::from_str("application/json").unwrap());
@@ -33,29 +34,27 @@ impl BotHttp {
         }
     }
 
-    pub async fn send_chat_message(
-        &mut self,
-        message: ChatMessage,
-        channel_id: Option<String>,
-        is_reply: bool,
-        // ) -> Result<ChatMessage, ()> {
-    ) {
-        match channel_id {
-            Some(channel_id) => {
-                match is_reply {
-                    true => {}
-                    false => {}
-                }
-                let res = self
-                    .http_client
-                    .post(format!("{}/channels/{}/messages", API_BASE, channel_id))
-                    .body(serde_json::to_string::<ChatMessage>(&message).unwrap())
-                    .send()
-                    .await;
-                print!("{:?}", res);
-            }
-            None => {
-                self.http_client.post(format!("{}", API_BASE));
+    ///
+    /// Sends a message in the channel and returns the message that just got created.
+    /// **Returns None if the request failed and prints the error to the console**
+    ///
+    pub fn send_chat_message(&mut self, message: ChatMessage, channel_id: &str) -> Option<Message> {
+        let message = serde_json::to_string::<ChatMessage>(&message).unwrap();
+        println!("{}", message);
+        match self
+            .http_client
+            .post(format!(
+                "localhost:2020/channels/{}/messages",
+                // API_BASE, channel_id
+                channel_id
+            ))
+            .body::<String>(message)
+            .send()
+        {
+            Ok(res) => Some(serde_json::from_str::<Message>(res.text().unwrap().as_str()).unwrap()),
+            Err(err) => {
+                print!("{:?}", err);
+                None
             }
         }
     }

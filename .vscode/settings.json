@@ -1,6 +1,5 @@
 {
   "rust-analyzer.linkedProjects": [
-    ".\\guilded_rs\\Cargo.toml",
     ".\\guilded_rs\\Cargo.toml"
   ]
 }

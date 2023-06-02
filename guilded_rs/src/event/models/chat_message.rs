@@ -1,6 +1,8 @@
 use iso8601_timestamp::Timestamp;
 use serde::{Deserialize, Serialize};
 
+use crate::bot_http::BotHttp;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum ChatMessageType {

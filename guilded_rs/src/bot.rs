@@ -21,14 +21,26 @@ use crate::event::Event;
 
 pub struct Bot {
     task_pool: TaskPool,
-    event_handler: Option<fn(bot: &mut BotHttp, event: Event)>,
     socket: Client<TlsStream<TcpStream>>,
-    token: String,
+    http: BotHttp,
+    other: BotOtherFields,
+}
+
+struct BotOtherFields {
+    event_handler: Option<fn(bot: &mut BotHttp, event: Event)>,
     http: BotHttp,
 }
 
+impl BotOtherFields {
+    fn handle_events(&mut self, event: Event) {
+        if let Some(handler) = self.event_handler {
+            (handler)(&mut self.http, event.clone());
+        };
+    }
+}
 impl Bot {
-    pub async fn new(token: String) -> Self {
+    pub fn new(token: String) -> Self {
+        let http = BotHttp::new(token.clone(), None);
         let mut headers = Headers::new();
         headers.set(Authorization(format!("Bearer {}", token.clone())));
         let socket = ClientBuilder::new("wss://www.guilded.gg/websocket/v1")
@@ -38,11 +50,13 @@ impl Bot {
             .unwrap();
         print!("{}[2J", 27 as char);
         Self {
+            other: BotOtherFields {
+                event_handler: None,
+                http: http.clone(),
+            },
             socket,
-            event_handler: None,
             task_pool: TaskPool::new(),
-            token: token.clone(),
-            http: BotHttp::new(token, None),
+            http,
         }
     }
 
@@ -50,17 +64,8 @@ impl Bot {
     /// *You can only have one event handler at this time*
     ///
     pub fn add_event_handler(&mut self, handler: fn(bot: &mut BotHttp, event: Event)) -> &mut Self {
-        self.event_handler = Some(handler);
+        self.other.event_handler = Some(handler);
         self
-    }
-
-    fn handle_events(&mut self, event: Event) {
-        if let Some(handler) = self.event_handler {
-            (handler)(
-                &mut BotHttp::new(self.token.clone(), Some(event.clone())),
-                event.clone(),
-            );
-        };
     }
 
     ///
@@ -82,7 +87,7 @@ impl Bot {
                             .unwrap();
                     }
                     OwnedMessage::Text(text) => match serde_json::from_str::<Event>(&text) {
-                        Ok(event) => self.handle_events(event),
+                        Ok(event) => self.other.handle_events(event),
                         Err(_) => {}
                     },
                     _ => {}

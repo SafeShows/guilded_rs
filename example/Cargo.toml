@@ -8,4 +8,3 @@ edition = "2021"
 [dependencies]
 guilded_rs = { path = "../guilded_rs" }
 dotenv = "0.15.0"
-tokio = { version = "1.28.1", features = ["full"] }

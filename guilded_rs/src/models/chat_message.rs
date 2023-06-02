@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
+use serde_with::skip_serializing_none;
 
-use super::ChatEmbed;
+use super::chat_embed::ChatEmbed;
 
+#[skip_serializing_none]
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatMessage {
@@ -31,8 +33,8 @@ impl ChatMessage {
     /// This will set the message content
     /// This is optional if message has one or more
     ///
-    pub fn set_content(&mut self, content: String) -> &mut Self {
-        self.content = Some(content);
+    pub fn set_content(&mut self, content: &str) -> &mut Self {
+        self.content = Some(content.to_string());
         self
     }
     ///
