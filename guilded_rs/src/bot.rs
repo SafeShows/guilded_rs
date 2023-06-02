@@ -14,12 +14,14 @@ use websocket::{
 
 use crate::{
     bot_http::BotHttp,
+    command::{Command, CommandHandler},
     task::{Task, TaskPool},
 };
 
 use crate::event::Event;
 
 pub struct Bot {
+    command_handler: CommandHandler,
     task_pool: TaskPool,
     socket: Client<TlsStream<TcpStream>>,
     http: BotHttp,
@@ -39,7 +41,7 @@ impl BotOtherFields {
     }
 }
 impl Bot {
-    pub fn new(token: String) -> Self {
+    pub fn new(token: String, prefix: String) -> Self {
         let http = BotHttp::new(token.clone(), None);
         let mut headers = Headers::new();
         headers.set(Authorization(format!("Bearer {}", token.clone())));
@@ -50,6 +52,7 @@ impl Bot {
             .unwrap();
         print!("{}[2J", 27 as char);
         Self {
+            command_handler: CommandHandler::new(prefix, http.clone()),
             other: BotOtherFields {
                 event_handler: None,
                 http: http.clone(),
@@ -76,6 +79,10 @@ impl Bot {
         self
     }
 
+    pub fn add_command(&mut self, command: Box<dyn Command>) {
+        self.command_handler.add_command(command);
+    }
+
     pub fn run(mut self) {
         self.task_pool.start_handler(self.http.clone());
         loop {
@@ -87,7 +94,16 @@ impl Bot {
                             .unwrap();
                     }
                     OwnedMessage::Text(text) => match serde_json::from_str::<Event>(&text) {
-                        Ok(event) => self.other.handle_events(event),
+                        Ok(event) => {
+                            match event.clone() {
+                                Event::ChatMessageCreated(data) => {
+                                    self.command_handler
+                                        .parse_message_and_handle_command(data.message);
+                                    self.other.handle_events(event);
+                                }
+                                _ => self.other.handle_events(event),
+                            };
+                        }
                         Err(_) => {}
                     },
                     _ => {}

@@ -43,11 +43,7 @@ impl BotHttp {
         println!("{}", message);
         match self
             .http_client
-            .post(format!(
-                "localhost:2020/channels/{}/messages",
-                // API_BASE, channel_id
-                channel_id
-            ))
+            .post(format!("{}/channels/{}/messages", API_BASE, channel_id))
             .body::<String>(message)
             .send()
         {

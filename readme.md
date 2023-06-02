@@ -5,15 +5,19 @@
 
 Easy to use rust library for creating guilded bots using rust.
 
-Features:
+### Features:
 
 - [Task Pool](#Task-Pool)
 - [Event Handler](#event-handler)
 
-Planned Features:
+### Planned Features:
 
-- Commands
-- Cogs _(looking on how hard (for me) this is to implement may not get added)_
+- [Commands](#commands-planned)
+
+### The `example` folder
+
+This folder is used for showing live working example on how the lib should be used. But also use <br/>
+for testing the library as I'm bad at writing unit test and I kinda hate 'em.
 
 ## Task Pool
 
@@ -21,7 +25,7 @@ Using Task Pool you have the ability to create tasks that run in the background.
 
 ### Examples
 
-### This will run every second
+#### This will run every second
 
 ```rs
 bot.add_task(Task {
@@ -33,7 +37,7 @@ bot.add_task(Task {
 
 ```
 
-### This task will run every 10 seconds and send a message in a channel.
+#### This task will run every 10 seconds and send a message in a channel.
 
 ```rs
 bot.add_task(Task {
@@ -56,6 +60,8 @@ bot.add_task(Task {
 });
 ```
 
+<br/>
+
 ## Event Handler
 
 Right now the only event the library parses is the `ChatMessageCreated` event from the WS server
@@ -69,4 +75,29 @@ bot.add_event_handler(|_bot, event| match event {
     }
     _ => {}
 });
+```
+
+<br/>
+
+## Commands (Planned)
+
+Rough example of the way commands will get declared.
+
+```rs
+struct PingCommand;
+impl Command for PingCommand {
+    fn name(&self) -> String {
+        "ping".to_string()
+    }
+
+    fn description(&self) -> String {
+        "returns pong".to_string()
+    }
+
+    fn handler(&self, ctx: CommandContext, _args: Vec<String>) {
+        let mut message = Message::default();
+        message.set_content("pong");
+        ctx.reply(message);
+    }
+}
 ```

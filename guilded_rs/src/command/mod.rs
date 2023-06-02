@@ -1,5 +1,7 @@
 mod context;
 pub use context::*;
+mod handler;
+pub use handler::*;
 
 use crate::{bot_http::BotHttp, event::models::ChatMessage};
 
@@ -22,16 +24,4 @@ pub trait Command {
     /// Command Handler
     ///
     fn handler(&self, ctx: CommandContext, args: Vec<String>);
-}
-
-pub struct CommandHandler {
-    commands: Vec<Box<dyn Command>>,
-}
-
-impl CommandHandler {
-    pub fn new() -> Self {
-        Self {
-            commands: Vec::new(),
-        }
-    }
 }
