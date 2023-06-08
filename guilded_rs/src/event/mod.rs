@@ -1,14 +1,31 @@
+//!
+//! This module contains the main event enum and also contains <br/>
+//! the event structs and the payloads
+//!
+
 use serde::{Deserialize, Serialize};
 
 mod events;
-pub mod models;
+pub mod payloads;
 use events::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", tag = "t", content = "d")]
+#[serde(rename_all = "PascalCase", tag = "t", content = "d")]
 pub enum Event {
+    ///
+    /// Emitted when a bot is added to a server
+    ///
+    /// **Note** If your bot does not have the "Receive all socket events" permission, `BotServerMembershipCreated` will still always be sent
+    ///
     BotServerMembershipCreated(BotServerMembershipCreated),
+
+    ///
+    /// Emitted when a bot is removed from a server
+    ///
+    /// **Note** If your bot does not have the "Receive all socket events" permission, `BotServerMembershipCreated` will still always be sent
+    ///
     BotServerMembershipDeleted(BotServerMembershipDeleted),
+
     ChatMessageCreated(ChatMessageCreated),
     ChatMessageUpdated(ChatMessageUpdated),
     ChatMessageDeleted(ChatMessageDeleted),

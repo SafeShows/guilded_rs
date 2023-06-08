@@ -1,13 +1,13 @@
-use crate::event::models::ChatMessage as EventChatMessage;
+use crate::event::payloads::ChatMessage as ChatMessagePayload;
 use crate::{bot_http::BotHttp, models::ChatMessage};
 #[derive(Clone, Debug)]
 pub struct CommandContext {
     pub bot: BotHttp,
-    pub message: EventChatMessage,
+    pub message: ChatMessagePayload,
 }
 
 impl CommandContext {
-    pub fn new(bot: BotHttp, message: EventChatMessage) -> Self {
+    pub fn new(bot: BotHttp, message: ChatMessagePayload) -> Self {
         Self { bot, message }
     }
     pub fn reply(&mut self, message: ChatMessage) {

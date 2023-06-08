@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::event::models::ChatMessage;
+use crate::event::payloads::ChatMessage;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

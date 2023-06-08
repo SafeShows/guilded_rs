@@ -47,25 +47,22 @@ impl ChatEmbed {
     /// Main header of the embed
     /// (max length 256)
     ///
-    pub fn set_title(&mut self, title: String) -> &mut Self {
+    pub fn set_title(&mut self, title: String) {
         self.title = Some(title);
-        self
     }
 
     ///
     /// Subtext of the embed (max length 2048)
     ///
-    pub fn set_description(&mut self, description: String) -> &mut Self {
+    pub fn set_description(&mut self, description: String) {
         self.description = Some(description);
-        self
     }
 
     ///
     /// URL to linkify the title field with (max length 1024)
     ///
-    pub fn set_url(&mut self, url: String) -> &mut Self {
+    pub fn set_url(&mut self, url: String) {
         self.url = Some(url);
-        self
     }
     ///
     /// The color that the left border should be<br/>
@@ -76,46 +73,61 @@ impl ChatEmbed {
     ///
     /// Code Example
     /// ```
-    /// embed.set_color(0xfff) // this will set the color of the embed white
-    /// embed.set_color(0x1bc271) // this will set the color of the embed green
-    /// embed.set_color(0x3c537c) // this will set the color of the embed dark blue
+    /// use guilded_rs::models::chat_embed::ChatEmbed;
+    ///
+    /// let mut embed = ChatEmbed::default();
+    /// embed.set_color(0xfff); // this will set the color of the embed white
+    /// embed.set_color(0x1bc271); // this will set the color of the embed green
+    /// embed.set_color(0x3c537c); // this will set the color of the embed dark blue
     /// ```
     ///
-    pub fn set_color(&mut self, color: i64) -> &mut Self {
+    pub fn set_color(&mut self, color: i64) {
         self.color = color;
-        self
     }
 
     ///
     /// A timestamp to put in the footer
     ///
-    pub fn set_timestamp(&mut self, timestamp: Timestamp) -> &mut Self {
+    pub fn set_timestamp(&mut self, timestamp: Timestamp) {
         self.timestamp = Some(timestamp);
-        self
     }
 
     ///
     /// An image to the right of the embed's content
     ///
-    pub fn set_thumbnail(&mut self, thumbnail: Thumbnail) -> &mut Self {
+    pub fn set_thumbnail(&mut self, thumbnail: Thumbnail) {
         self.thumbnail = Some(thumbnail);
-        self
     }
 
     ///
     /// The main picture to associate with the embed
     ///
-    pub fn set_image(&mut self, image: Image) -> &mut Self {
+    pub fn set_image(&mut self, image: Image) {
         self.image = Some(image);
-        self
     }
 
     ///
     /// The main picture to associate with the embed
     ///
-    pub fn set_author(&mut self, author: Author) -> &mut Self {
+    pub fn set_author(&mut self, author: Author) {
         self.author = Some(author);
-        self
+    }
+
+    ///
+    /// Table-like cells to add to the embed.
+    /// **Max 25 fields per embed. If you try to add more it will just ignore it.**
+    ///
+    pub fn add_field(&mut self, field: Field) {
+        match &self.fields {
+            Some(_) => {
+                if self.fields.as_mut().unwrap().len() <= 25 as usize {
+                    self.fields.as_mut().unwrap().push(field);
+                }
+            }
+            None => {
+                self.fields = Some(vec![field]);
+            }
+        }
     }
 }
 

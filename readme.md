@@ -9,10 +9,7 @@ Easy to use rust library for creating guilded bots using rust.
 
 - [Task Pool](#Task-Pool)
 - [Event Handler](#event-handler)
-
-### Planned Features:
-
-- [Commands](#commands-planned)
+- [Commands](#commands)
 
 ### The `example` folder
 
@@ -54,6 +51,8 @@ bot.add_task(Task {
             None => {
                 // Returns None if the request failed.
                 // in this case look at the console for the error message.
+                // And if you need help with that don't be
+                // shy and send me a message on guilded.
             }
         }
     },
@@ -79,9 +78,9 @@ bot.add_event_handler(|_bot, event| match event {
 
 <br/>
 
-## Commands (Planned)
+## Commands
 
-Rough example of the way commands will get declared.
+Example of how to declare a command.
 
 ```rs
 struct PingCommand;
@@ -100,4 +99,11 @@ impl Command for PingCommand {
         ctx.reply(message);
     }
 }
+```
+
+And here's how to add it to the bot
+
+```rs
+let ping_command: PingCommand = PingCommand {};
+bot.add_command(Box::new(ping_command));
 ```

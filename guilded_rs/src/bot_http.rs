@@ -3,7 +3,6 @@ use reqwest::{
     header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE},
 };
 
-use crate::event::models::ChatMessage as Message;
 use crate::{event::Event, models::ChatMessage};
 
 const API_BASE: &str = "https://www.guilded.gg/api/v1";
@@ -38,16 +37,17 @@ impl BotHttp {
     /// Sends a message in the channel and returns the message that just got created.
     /// **Returns None if the request failed and prints the error to the console**
     ///
-    pub fn send_chat_message(&mut self, message: ChatMessage, channel_id: &str) -> Option<Message> {
+    pub fn send_chat_message(&mut self, message: ChatMessage, channel_id: &str) -> Option<ChatMessage> {
         let message = serde_json::to_string::<ChatMessage>(&message).unwrap();
-        println!("{}", message);
         match self
             .http_client
             .post(format!("{}/channels/{}/messages", API_BASE, channel_id))
             .body::<String>(message)
             .send()
         {
-            Ok(res) => Some(serde_json::from_str::<Message>(res.text().unwrap().as_str()).unwrap()),
+            Ok(res) => {
+                Some(serde_json::from_str::<ChatMessage>(res.text().unwrap().as_str()).unwrap())
+            }
             Err(err) => {
                 print!("{:?}", err);
                 None

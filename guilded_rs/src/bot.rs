@@ -20,8 +20,10 @@ use crate::{
 
 use crate::event::Event;
 
+///
+/// Main struct of the library
+///
 pub struct Bot {
-    command_handler: CommandHandler,
     task_pool: TaskPool,
     socket: Client<TlsStream<TcpStream>>,
     http: BotHttp,
@@ -29,15 +31,35 @@ pub struct Bot {
 }
 
 struct BotOtherFields {
+    command_handler: CommandHandler,
     event_handler: Option<fn(bot: &mut BotHttp, event: Event)>,
     http: BotHttp,
 }
 
 impl BotOtherFields {
+    fn set_event_handler(&mut self, handler: fn(bot: &mut BotHttp, event: Event)) {
+        self.event_handler = Some(handler);
+    }
+
     fn handle_events(&mut self, event: Event) {
-        if let Some(handler) = self.event_handler {
-            (handler)(&mut self.http, event.clone());
+        match event.clone() {
+            Event::ChatMessageCreated(data) => {
+                self.command_handler
+                    .parse_message_and_handle_command(data.clone().message);
+                if let Some(handler) = self.event_handler {
+                    (handler)(&mut self.http, event);
+                };
+            }
+            _ => {
+                if let Some(handler) = self.event_handler {
+                    (handler)(&mut self.http, event);
+                };
+            }
         };
+    }
+
+    pub fn add_command(&mut self, command: Box<dyn Command>) {
+        self.command_handler.add_command(command);
     }
 }
 impl Bot {
@@ -52,8 +74,8 @@ impl Bot {
             .unwrap();
         print!("{}[2J", 27 as char);
         Self {
-            command_handler: CommandHandler::new(prefix, http.clone()),
             other: BotOtherFields {
+                command_handler: CommandHandler::new(prefix, http.clone()),
                 event_handler: None,
                 http: http.clone(),
             },
@@ -66,49 +88,48 @@ impl Bot {
     ///
     /// *You can only have one event handler at this time*
     ///
-    pub fn add_event_handler(&mut self, handler: fn(bot: &mut BotHttp, event: Event)) -> &mut Self {
-        self.other.event_handler = Some(handler);
-        self
+    pub fn add_event_handler(&mut self, handler: fn(bot: &mut BotHttp, event: Event)) {
+        self.other.set_event_handler(handler)
     }
 
     ///
     /// Adds a task to the task pool.
     ///
-    pub fn add_task(&mut self, task: Task) -> &mut Self {
+    pub fn add_task(&mut self, task: Task) {
         self.task_pool.add_task(task);
-        self
     }
 
     pub fn add_command(&mut self, command: Box<dyn Command>) {
-        self.command_handler.add_command(command);
+        self.other.add_command(command);
     }
 
     pub fn run(mut self) {
         self.task_pool.start_handler(self.http.clone());
         loop {
             match self.socket.recv_message() {
-                Ok(message) => match message {
-                    OwnedMessage::Ping(data) => {
-                        self.socket
-                            .send_message::<Message>(&Message::pong(data))
-                            .unwrap();
-                    }
-                    OwnedMessage::Text(text) => match serde_json::from_str::<Event>(&text) {
-                        Ok(event) => {
-                            match event.clone() {
-                                Event::ChatMessageCreated(data) => {
-                                    self.command_handler
-                                        .parse_message_and_handle_command(data.message);
-                                    self.other.handle_events(event);
-                                }
-                                _ => self.other.handle_events(event),
-                            };
+                Ok(message) => {
+                    match message {
+                        OwnedMessage::Ping(data) => {
+                            self.socket
+                                .send_message::<Message>(&Message::pong(data))
+                                .unwrap();
                         }
-                        Err(_) => {}
-                    },
-                    _ => {}
-                },
-                Err(_) => todo!(),
+                        OwnedMessage::Text(text) => match serde_json::from_str::<Event>(&text) {
+                            Ok(event) => {
+                                self.other.handle_events(event);
+                            }
+                            Err(err) => {
+                                println!("{err:?}");
+                            }
+                        },
+                        _ => {
+                            println!("{message:?}");
+                        }
+                    };
+                }
+                Err(err) => {
+                    println!("{err:?}");
+                }
             }
             thread::sleep(Duration::from_millis(10));
         }

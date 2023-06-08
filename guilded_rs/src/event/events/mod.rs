@@ -1,3 +1,7 @@
+//!
+//! All of the structs for the event enum.
+//!
+
 mod bot_server_membership_created;
 pub use bot_server_membership_created::*;
 mod bot_server_membership_deleted;
