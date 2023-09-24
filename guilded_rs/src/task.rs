@@ -96,6 +96,7 @@ impl TaskPool {
         self.pool.push(task);
     }
 
+    #[cfg(not(doc))]
     pub fn start_handler(self, bot: BotHttp) {
         spawn(move || loop {
             if let Some(task) = self.pool.pop() {

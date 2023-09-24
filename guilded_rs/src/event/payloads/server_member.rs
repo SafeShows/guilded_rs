@@ -11,7 +11,7 @@ pub struct ServerMember {
     pub nickname: Option<String>,
 
     ///
-    /// The ISO 8601 timestamp that the member was created at
+    /// The ISO 8601 timestamp that the member joined the server
     ///
     pub joined_at: Timestamp,
     pub is_owner: Option<bool>,

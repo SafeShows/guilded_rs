@@ -30,8 +30,6 @@ pub use context::*;
 mod handler;
 pub use handler::*;
 
-use crate::{bot_http::BotHttp, event::payloads::ChatMessage};
-
 pub trait Command {
     ///
     /// This function should return the name of the command<br/>

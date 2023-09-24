@@ -1,8 +1,6 @@
 use iso8601_timestamp::Timestamp;
 use serde::{Deserialize, Serialize};
 
-use crate::bot_http::BotHttp;
-
 use super::ChatEmbed;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

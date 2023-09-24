@@ -1,4 +1,3 @@
-use iso8601_timestamp::Timestamp;
 use serde::{Deserialize, Serialize};
 
 use crate::event::payloads::DeletedMessage;
