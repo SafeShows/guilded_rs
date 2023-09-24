@@ -1,6 +1,6 @@
 [package]
 name = "guilded_rs"
-version = "1.0.0"
+version = "0.1.0"
 edition = "2021"
 authors = ["SafeShows <guilded.gg/u/SafeShows>"]
 description = "Libary for creating bots in rust for guilded"
